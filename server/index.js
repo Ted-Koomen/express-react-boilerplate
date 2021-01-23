@@ -5,32 +5,23 @@ const httpAdapter = require('axios/lib/adapters/http')
 const fs = require('fs');
 
 
-app.get('/', async (req, res) => {
+app.get('/', async () => {
     try {
         const output = fs.createWriteStream('image.jpg')
 
-        axios.get(
-            'https://images.metmuseum.org/CRDImages/ep/original/DP346474.jpg',
-            {
-                responseType: 'stream',
-                adapter: httpAdapter
-            }
-        )
-            .then(res => {
-                const stream = res.data;
-                stream.on('data', chunk => {
-                    console.log('writing')
-                    output.write(new Buffer.from(chunk))
-                })
+        const res = await axios.get('https://images.metmuseum.org/CRDImages/ep/original/DP346474.jpg',
+            { responseType: 'stream', adapter: httpAdapter }
+        );
+        
+        const stream = res.data;
+        stream.on('data', chunk => {
+            output.write(new Buffer.from(chunk))
+        })
 
-                stream.on('end', () => {
-                    console.log("done")
-                    output.end()
-                })
-            })
-            .catch(e => {
-                console.log(e)
-            })
+        stream.on('end', () => {
+            output.end()
+        })
+
     } catch (e) {
         console.log(e)
     }
@@ -38,4 +29,4 @@ app.get('/', async (req, res) => {
 
 app.listen(5000, () => {
     console.log("Listening on 5000")
-})
+});
